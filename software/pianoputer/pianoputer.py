@@ -36,7 +36,7 @@ ALLOWED_EVENTS = {pygame.KEYDOWN, pygame.KEYUP, pygame.QUIT}
 
 def get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=DESCRIPTION)
-    default_wav_file = "audio_files/piano_c4.wav"
+    default_wav_file = "audio_files/bowl_c6.wav"
     parser.add_argument(
         "--wav",
         "-w",
@@ -74,6 +74,14 @@ def get_or_create_key_sounds(
     clear_cache: bool,
     keys: List[str],
 ) -> Generator[pygame.mixer.Sound, None, None]:
+
+    print("wav_path: " + wav_path);
+    print("sample_rate_hz: " + sample_rate_hz);
+    print("channels: " + channels);
+    print("tones: " + tones[0]);
+    print("clear_cache: " + clear_cache);
+    print("keys: " + keys[0]);
+
     sounds = []
     y, sr = librosa.load(wav_path, sr=sample_rate_hz, mono=channels == 1)
     file_name = os.path.splitext(os.path.basename(wav_path))[0]
@@ -87,7 +95,7 @@ def get_or_create_key_sounds(
     for i, tone in enumerate(tones):
         cached_path = Path(cache_folder_path, "{}.wav".format(tone))
         if Path(cached_path).exists():
-            print("Loading note {} out of {} for {}".format(i + 1, len(tones), keys[i]))
+            print("oading note {} out of {} for {}".format(i + 1, len(tones), keys[i]))
             sound, sr = librosa.load(cached_path, sr=sample_rate_hz, mono=channels == 1)
             if channels > 1:
                 # the shape must be [length, 2]
