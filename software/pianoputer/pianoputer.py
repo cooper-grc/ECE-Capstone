@@ -308,7 +308,7 @@ def play_until_user_exits(
     #         elif event.type == pygame.KEYUP:
     #             sound.fadeout(SOUND_FADE_MILLISECONDS)
 
-
+    # From https://stackoverflow.com/questions/64818410/pygame-read-midi-input
     pygame.fastevent.init()
     event_get = pygame.fastevent.get
     event_post = pygame.fastevent.post
@@ -316,6 +316,8 @@ def play_until_user_exits(
     pygame.midi.init()
 
     _print_device_info()
+
+    device_id = 3
 
     if device_id is None:
         input_id = pygame.midi.get_default_input_id()
