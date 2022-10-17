@@ -37,7 +37,7 @@ WHITE = (255, 255, 255, 255)
 AUDIO_ASSET_PREFIX = "audio_files/"
 KEYBOARD_ASSET_PREFIX = "keyboards/"
 CURRENT_WORKING_DIR = Path(__file__).parent.absolute()
-ALLOWED_EVENTS = {pygame.KEYDOWN, pygame.KEYUP, pygame.QUIT}
+ALLOWED_EVENTS = {pygame.KEYDOWN, pygame.KEYUP, pygame.QUIT, pygame.MIDIIN}
 
 
 def get_parser() -> argparse.ArgumentParser:
@@ -309,9 +309,9 @@ def play_until_user_exits(
     #             sound.fadeout(SOUND_FADE_MILLISECONDS)
 
     # From https://stackoverflow.com/questions/64818410/pygame-read-midi-input
-    pygame.fastevent.init()
-    event_get = pygame.fastevent.get
-    event_post = pygame.fastevent.post
+    # pygame.fastevent.init()
+    event_get = pygame.event.get
+    event_post = pygame.event.post
 
     pygame.midi.init()
 
@@ -330,22 +330,27 @@ def play_until_user_exits(
     pygame.display.set_mode((1, 1))
 
     going = True
+    key = None
     while going:
         events = event_get()
         for e in events:
             if e.type in [pygame.QUIT]:
                 going = False
             if e.type in [pygame.KEYDOWN]:
-                going = False
+
+                key = keyboard.get_key(e)
+                print(key)
+                #going = False
             if e.type in [pygame.midi.MIDIIN]:
-                print(e)
-                try:
-                    sound = sound_by_key["Key.M"]
-                    sound.stop()
-                    sound.play(fade_ms=SOUND_FADE_MILLISECONDS)
-                    sound.fadeout(SOUND_FADE_MILLISECONDS)
-                except KeyError:
-                    continue
+               if e.__dict__.get('data1') != 0:
+                    try:
+                        print("midi " + str(key))
+                        sound = sound_by_key[key]
+                        sound.stop()
+                        sound.play(fade_ms=SOUND_FADE_MILLISECONDS)
+                        sound.fadeout(SOUND_FADE_MILLISECONDS)
+                    except KeyError:
+                        continue
 
 
 
