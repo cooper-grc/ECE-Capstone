@@ -310,6 +310,8 @@ def play_until_user_exits(
 
     # From https://stackoverflow.com/questions/64818410/pygame-read-midi-input
     # pygame.fastevent.init()
+
+
     event_get = pygame.event.get
     event_post = pygame.event.post
 
@@ -345,6 +347,7 @@ def play_until_user_exits(
                if e.__dict__.get('data1') != 0:
                     try:
                         print("midi " + str(key))
+                        key = keys[int(e.__dict__.get('data3'))] # Which data?
                         sound = sound_by_key[key]
                         sound.stop()
                         sound.play(fade_ms=SOUND_FADE_MILLISECONDS)
