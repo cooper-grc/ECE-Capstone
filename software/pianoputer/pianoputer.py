@@ -344,14 +344,15 @@ def play_until_user_exits(
                 print(key)
                 #going = False
             if e.type in [pygame.midi.MIDIIN]:
-               if e.__dict__.get('data1') != 0:
+               if e.__dict__.get('data1') != 0 and e.__dict__.get('data2') != 0:
+                    print(e)
                     try:
                         print("midi " + str(key))
-                        key = keys[int(e.__dict__.get('data3'))] # Which data?
+                        key = keys[int(e.__dict__.get('data1')) % len(keys)]
                         sound = sound_by_key[key]
                         sound.stop()
                         sound.play(fade_ms=SOUND_FADE_MILLISECONDS)
-                        sound.fadeout(SOUND_FADE_MILLISECONDS)
+                        #sound.fadeout(SOUND_FADE_MILLISECONDS)
                     except KeyError:
                         continue
 
