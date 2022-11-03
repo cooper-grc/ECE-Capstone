@@ -10,18 +10,14 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Dict, Generator, List, Optional, Tuple
 
+import pygame
+import pygame.midi
 import keyboardlayout as kl
 import keyboardlayout.pygame as klp
+
 import librosa
 import numpy
-import pygame
 import soundfile
-
-import sys
-# import os
-
-# import pygame as pg
-import pygame.midi
 
 ANCHOR_INDICATOR = " anchor"
 ANCHOR_NOTE_REGEX = re.compile(r"\s[abcdefg]$")
@@ -41,6 +37,7 @@ ALLOWED_EVENTS = {pygame.KEYDOWN, pygame.KEYUP, pygame.QUIT, pygame.MIDIIN}
 
 
 def get_parser() -> argparse.ArgumentParser:
+    """Generate and return parser - unused in current implementation"""
     parser = argparse.ArgumentParser(description=DESCRIPTION)
     default_wav_file = "audio_files/piano_c4.wav"
     parser.add_argument(
@@ -162,6 +159,7 @@ LETTER_KEYS_TO_INDEX = {"c": 0, "d": 2, "e": 4, "f": 5, "g": 7, "a": 9, "b": 11}
 
 
 def __get_black_key_indices(key_name: str) -> set:
+    """Calculate and return the indices of black keys"""
     letter_key_index = LETTER_KEYS_TO_INDEX[key_name]
     black_key_indices = set()
     for ind in BLACK_INDICES_C_SCALE:
@@ -173,6 +171,15 @@ def __get_black_key_indices(key_name: str) -> set:
 
 
 def get_keyboard_info(keyboard_file: str):
+    """Generate keyboard info
+    Returns:
+        keys -- list of keys
+        tones -- list of tones
+        color_to_key -- dicts of colors mapped to keys
+        key_color -- tuple of key color
+        key_txt_color -- tuple of key text color
+    """
+
     with codecs.open(keyboard_file, encoding="utf-8") as k_file:
         lines = k_file.readlines()
     keys = []
@@ -320,15 +327,15 @@ def play_until_user_exits(
     key_sounds: List[pygame.mixer.Sound],
     keyboard: klp.KeyboardLayout,
 ):
+    """Plays sounds from keypresses. Runs continuously until stopped by user"""
     sound_by_key = dict(zip(keys, key_sounds))
 
     event_get = pygame.event.get
     event_post = pygame.event.post
-
     pygame.midi.init()
-
     _print_device_info()
 
+    # Midi device id
     device_id = 3
 
     if device_id is None:
@@ -349,23 +356,17 @@ def play_until_user_exits(
             if e.type in [pygame.QUIT]:
                 going = False
             if e.type in [pygame.KEYDOWN]:
-
-                key = keyboard.get_key(e)
-                # print(key)
-                #going = False
+                going = False
             if e.type in [pygame.midi.MIDIIN]:
+               # if e is a valid midi keypress play the corresponding sound
                if e.__dict__.get('data1') != 0 and e.__dict__.get('data2') != 0:
-                    # print(e)
                     try:
-                        print("midi " + str(key))
                         key = keys[int(e.__dict__.get('data1')) % len(keys)]
                         sound = sound_by_key[key]
                         sound.stop()
                         sound.play(fade_ms=SOUND_FADE_MILLISECONDS)
-                        #sound.fadeout(SOUND_FADE_MILLISECONDS)
                     except KeyError:
                         continue
-
 
 
         if i.poll():
@@ -451,12 +452,14 @@ def play_pianoputer(args: Optional[List[str]] = None):
 
 
 def print_device_info():
+    """Helper function to print info on connected midi devices"""
     pygame.midi.init()
     _print_device_info()
     pygame.midi.quit()
 
 
 def _print_device_info():
+    """Helper function to print info on connected midi devices"""
     for i in range(pygame.midi.get_count()):
         r = pygame.midi.get_device_info(i)
         (interf, name, input, output, opened) = r
@@ -471,49 +474,6 @@ def _print_device_info():
             "%2i: interface :%s:, name :%s:, opened :%s:  %s"
             % (i, interf, name, opened, in_out)
         )
-
-
-def input_main(device_id=None):
-    # pygame.init()
-    pygame.fastevent.init()
-    event_get = pygame.fastevent.get
-    event_post = pygame.fastevent.post
-
-    pygame.midi.init()
-
-    _print_device_info()
-
-    if device_id is None:
-        input_id = pygame.midi.get_default_input_id()
-    else:
-        input_id = device_id
-
-    print("using input_id :%s:" % input_id)
-    i = pygame.midi.Input(input_id)
-
-    pygame.display.set_mode((1, 1))
-
-    going = True
-    while going:
-        events = event_get()
-        for e in events:
-            if e.type in [pygame.QUIT]:
-                going = False
-            if e.type in [pygame.KEYDOWN]:
-                going = False
-            # if e.type in [pygame.midi.MIDIIN]:
-                # print(e)
-
-        if i.poll():
-            midi_events = i.read(10)
-            # convert them into pygame events.
-            midi_evs = pygame.midi.midis2events(midi_events, i.device_id)
-
-            for m_e in midi_evs:
-                event_post(m_e)
-
-    del i
-    pygame.midi.quit()
 
 
 if __name__ == "__main__":
