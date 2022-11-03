@@ -81,6 +81,30 @@ def get_or_create_key_sounds(
     keys: List[str],
 ) -> Generator[pygame.mixer.Sound, None, None]:
     sounds = []
+    """Pitch shifting the sounds for each key.
+
+    Keyword arguments:
+    wav_path -- the path to the sound file
+    sample_rate_hz -- the freq of the audio
+    channels -- number of audio channels
+    tones -- list of the notes numbers
+    clear_cache -- bool to clear cache
+    keys -- list of the piano keys
+    Return variables:
+    sounds -- map of pygame sounds
+    """
+
+    """LIBROSA LOAD:
+    Load an audio file as a floating point time series.
+    Audio will be automatically resampled to the given rate.
+    Parameters:
+        wav_path -- path to input file
+        sr -- target sampling rate
+        mono -- boolean to make single channel
+    Returns: 
+        y -- audio time series
+        sr -- sampling rate
+    """
     y, sr = librosa.load(wav_path, sr=sample_rate_hz, mono=channels == 1)
     file_name = os.path.splitext(os.path.basename(wav_path))[0]
     folder_containing_wav = Path(wav_path).parent.absolute()
@@ -90,11 +114,15 @@ def get_or_create_key_sounds(
     if not cache_folder_path.exists():
         print("Generating samples for each key")
         os.mkdir(cache_folder_path)
+    
+    # Generate audio samples for each key:
     for i, tone in enumerate(tones):
         cached_path = Path(cache_folder_path, "{}.wav".format(tone))
         if Path(cached_path).exists():
             print("Loading note {} out of {} for {}".format(i + 1, len(tones), keys[i]))
+            # sound -- audio time series, sr -- sampling rate
             sound, sr = librosa.load(cached_path, sr=sample_rate_hz, mono=channels == 1)
+
             if channels > 1:
                 # the shape must be [length, 2]
                 sound = numpy.transpose(sound)
@@ -104,6 +132,17 @@ def get_or_create_key_sounds(
                     i + 1, len(tones), keys[i]
                 )
             )
+
+            """LIBROSA PITCH SHIFT:
+            Shift the pitch of a waveform by n_steps steps.
+            A step is equal to a semitone if bins_per_octave is set to 12.
+            Parameters:
+                y -- audio time series. Multi-channel is supported.
+                sr -- audio sampling rate of y
+                n_steps=tone -- how many (fractional) steps to shift y
+            Returns:
+                sound -- The pitch-shifted audio time-series
+            """
             if channels == 1:
                 sound = librosa.effects.pitch_shift(y, sr, n_steps=tone)
             else:
@@ -282,35 +321,6 @@ def play_until_user_exits(
     keyboard: klp.KeyboardLayout,
 ):
     sound_by_key = dict(zip(keys, key_sounds))
-    # playing = True
-
-    # while playing:
-    #     for event in pygame.event.get():
-
-    #         if event.type == pygame.QUIT:
-    #             playing = False
-    #             break
-    #         elif event.key == pygame.K_ESCAPE:
-    #             playing = False
-    #             break
-
-    #         key = keyboard.get_key(event)
-    #         if key is None:
-    #             continue
-    #         try:
-    #             sound = sound_by_key[key]
-    #         except KeyError:
-    #             continue
-
-    #         if event.type == pygame.KEYDOWN:
-    #             sound.stop()
-    #             sound.play(fade_ms=SOUND_FADE_MILLISECONDS)
-    #         elif event.type == pygame.KEYUP:
-    #             sound.fadeout(SOUND_FADE_MILLISECONDS)
-
-    # From https://stackoverflow.com/questions/64818410/pygame-read-midi-input
-    # pygame.fastevent.init()
-
 
     event_get = pygame.event.get
     event_post = pygame.event.post
@@ -341,11 +351,11 @@ def play_until_user_exits(
             if e.type in [pygame.KEYDOWN]:
 
                 key = keyboard.get_key(e)
-                print(key)
+                # print(key)
                 #going = False
             if e.type in [pygame.midi.MIDIIN]:
                if e.__dict__.get('data1') != 0 and e.__dict__.get('data2') != 0:
-                    print(e)
+                    # print(e)
                     try:
                         print("midi " + str(key))
                         key = keys[int(e.__dict__.get('data1')) % len(keys)]
@@ -366,21 +376,6 @@ def play_until_user_exits(
             for m_e in midi_evs:
                 event_post(m_e)
 
-
-        # key = keyboard.get_key(event)
-        # if key is None:
-        #     continue
-        # try:
-        #     sound = sound_by_key[key]
-        # except KeyError:
-        #     continue
-
-        # if event.type == pygame.KEYDOWN:
-        #     sound.stop()
-        #     sound.play(fade_ms=SOUND_FADE_MILLISECONDS)
-        # elif event.type == pygame.KEYUP:
-        #     sound.fadeout(SOUND_FADE_MILLISECONDS)
-
     del i
     pygame.midi.quit()
 
@@ -389,6 +384,14 @@ def play_until_user_exits(
 
 
 def get_audio_data(wav_path: str) -> Tuple:
+    """Get the data from the wave file.
+
+    Keyword arguments:
+    wav_path -- the path to the audio wave file
+    Return variables:
+    framerate_hz -- the frequency in hertz of the sound file
+    channels -- the number of channels from sound
+    """
     audio_data, framerate_hz = soundfile.read(wav_path)
     array_shape = audio_data.shape
     if len(array_shape) == 1:
@@ -419,9 +422,17 @@ def process_args(parser: argparse.ArgumentParser, args: Optional[List]) -> Tuple
 
 
 def play_pianoputer(args: Optional[List[str]] = None):
+    """Organize the data and trigger the playing of the samplisizer.
+
+    Keyword arguments:
+        args -- list of arguments 
+    """
+    # Information variables from parser
     parser = get_parser()
     wav_path, keyboard_path, clear_cache = process_args(parser, args)
+    # Pull audio data from wave file
     audio_data, framerate_hz, channels = get_audio_data(wav_path)
+    # Pull keyboard info from path
     results = get_keyboard_info(keyboard_path)
     keys, tones, color_to_key, key_color, key_txt_color = results
     key_sounds = get_or_create_key_sounds(
@@ -490,8 +501,8 @@ def input_main(device_id=None):
                 going = False
             if e.type in [pygame.KEYDOWN]:
                 going = False
-            if e.type in [pygame.midi.MIDIIN]:
-                print(e)
+            # if e.type in [pygame.midi.MIDIIN]:
+                # print(e)
 
         if i.poll():
             midi_events = i.read(10)
