@@ -512,7 +512,7 @@ def play_pianoputer(args: Optional[List[str]] = None):
     # Setup GPIO
     setup_gpio()
     processing()
-    
+
     while True:
         # Information variables from parser
         parser = get_parser()
@@ -523,7 +523,7 @@ def play_pianoputer(args: Optional[List[str]] = None):
         results = get_keyboard_info(keyboard_path)
         keys, tones, color_to_key, key_color, key_txt_color = results
         key_sounds = get_or_create_key_sounds(
-            wav_path, framerate_hz, channels, tones, clear_cache, keys
+            wav_path, framerate_hz, channels, tones, True, keys
         )
 
         _screen, keyboard = configure_pygame_audio_and_set_ui(
@@ -537,9 +537,6 @@ def play_pianoputer(args: Optional[List[str]] = None):
         play_until_user_exits(keys, key_sounds, keyboard)
         # Record Sound
         record_sound()
-
-
-
 
 
 
