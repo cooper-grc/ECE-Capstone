@@ -22,6 +22,9 @@ import soundfile
 import pyaudio
 import wave
 
+import RPi.GPIO as GPIO
+import time
+
 ANCHOR_INDICATOR = " anchor"
 ANCHOR_NOTE_REGEX = re.compile(r"\s[abcdefg]$")
 DESCRIPTION = 'Use your computer keyboard as a "piano"'
@@ -37,6 +40,12 @@ AUDIO_ASSET_PREFIX = "audio_files/"
 KEYBOARD_ASSET_PREFIX = "keyboards/"
 CURRENT_WORKING_DIR = Path(__file__).parent.absolute()
 ALLOWED_EVENTS = {pygame.KEYDOWN, pygame.KEYUP, pygame.QUIT, pygame.MIDIIN}
+
+# Setup GPIO
+btn_pin = 17
+g_pin = 22
+y_pin = 23
+r_pin = 24
 
 
 def get_parser() -> argparse.ArgumentParser:
@@ -462,6 +471,17 @@ def record_sound():
     wavefile.writeframes(b''.join(frames))
     wavefile.close()
 
+def setup_gpio():
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(btn_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(g_pin, GPIO.OUT)
+    GPIO.setup(y_pin, GPIO.OUT)
+    GPIO.setup(r_pin, GPIO.OUT)
+
+    GPIO.output(g_pin, GPIO.LOW)
+    GPIO.output(y_pin, GPIO.LOW)
+    GPIO.output(r_pin, GPIO.LOW)
+
 
 def play_pianoputer(args: Optional[List[str]] = None):
     """Organize the data and trigger the playing of the samplisizer.
@@ -469,8 +489,12 @@ def play_pianoputer(args: Optional[List[str]] = None):
     Keyword arguments:
         args -- list of arguments 
     """
-    # Information variables from parser
+    # Setup GPIO
+    setup_gpio()
+    GPIO.output(y_pin, GPIO.HIGH)
+    # Record Sound
     record_sound()
+    # Information variables from parser
     parser = get_parser()
     wav_path, keyboard_path, clear_cache = process_args(parser, args)
     # Pull audio data from wave file
