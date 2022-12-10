@@ -364,7 +364,6 @@ def play_until_user_exits(
     going = True
     key = None
     playable()
-    GPIO.add_event_detect(channel, GPIO.FALLING)
     while going:
         if GPIO.event_detected(channel):
             going = False
@@ -482,6 +481,7 @@ def record_sound():
 def setup_gpio():
     GPIO.setmode(GPIO.BOARD)
     # GPIO.setup(btn_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.add_event_detect(channel, GPIO.FALLING)
     GPIO.setup(channel, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(g_pin, GPIO.OUT)
     GPIO.setup(y_pin, GPIO.OUT)
