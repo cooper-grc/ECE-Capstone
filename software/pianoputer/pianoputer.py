@@ -42,10 +42,10 @@ CURRENT_WORKING_DIR = Path(__file__).parent.absolute()
 ALLOWED_EVENTS = {pygame.KEYDOWN, pygame.KEYUP, pygame.QUIT, pygame.MIDIIN}
 
 # Setup GPIO
-btn_pin = 17
-g_pin = 22
-y_pin = 23
-r_pin = 24
+btn_pin = 11
+g_pin = 15
+y_pin = 16
+r_pin = 18
 
 
 def get_parser() -> argparse.ArgumentParser:
