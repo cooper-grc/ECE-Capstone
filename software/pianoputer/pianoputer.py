@@ -362,6 +362,7 @@ def play_until_user_exits(
 
     going = True
     key = None
+    playable()
     while going:
         events = event_get()
         for e in events:
@@ -388,12 +389,13 @@ def play_until_user_exits(
 
             for m_e in midi_evs:
                 event_post(m_e)
+    
+    processing()
 
     del i
     pygame.midi.quit()
 
     pygame.quit()
-    print("Goodbye")
 
 
 def get_audio_data(wav_path: str) -> Tuple:
@@ -449,6 +451,7 @@ def record_sound():
                         input_device_index = dev_index,input = True, \
                         frames_per_buffer=chunk)
     print("recording")
+    recording()
     frames = []
 
     # loop through stream and append audio chunks to frame array
@@ -456,6 +459,7 @@ def record_sound():
         data = stream.read(chunk)
         frames.append(data)
 
+    processing()
     print("finished recording")
 
     # stop the stream, close it, and terminate the pyaudio instantiation
@@ -482,6 +486,22 @@ def setup_gpio():
     GPIO.output(y_pin, GPIO.LOW)
     GPIO.output(r_pin, GPIO.LOW)
 
+def recording():
+    GPIO.output(g_pin, GPIO.LOW)
+    GPIO.output(y_pin, GPIO.LOW)
+    GPIO.output(r_pin, GPIO.HIGH)
+
+def processing():
+    GPIO.output(g_pin, GPIO.LOW)
+    GPIO.output(y_pin, GPIO.HIGH)
+    GPIO.output(r_pin, GPIO.LOW)
+
+def playable():
+    GPIO.output(g_pin, GPIO.HIGH)
+    GPIO.output(y_pin, GPIO.LOW)
+    GPIO.output(r_pin, GPIO.LOW)
+
+
 
 def play_pianoputer(args: Optional[List[str]] = None):
     """Organize the data and trigger the playing of the samplisizer.
@@ -489,32 +509,38 @@ def play_pianoputer(args: Optional[List[str]] = None):
     Keyword arguments:
         args -- list of arguments 
     """
+    processing()
     # Setup GPIO
     setup_gpio()
-    GPIO.output(y_pin, GPIO.HIGH)
-    # Record Sound
-    record_sound()
-    # Information variables from parser
-    parser = get_parser()
-    wav_path, keyboard_path, clear_cache = process_args(parser, args)
-    # Pull audio data from wave file
-    audio_data, framerate_hz, channels = get_audio_data(wav_path)
-    # Pull keyboard info from path
-    results = get_keyboard_info(keyboard_path)
-    keys, tones, color_to_key, key_color, key_txt_color = results
-    key_sounds = get_or_create_key_sounds(
-        wav_path, framerate_hz, channels, tones, clear_cache, keys
-    )
 
-    _screen, keyboard = configure_pygame_audio_and_set_ui(
-        framerate_hz, channels, keyboard_path, color_to_key, key_color, key_txt_color
-    )
-    print(
-        "Ready for you to play!\n"
-        "Press the keys on your keyboard. "
-        "To exit presss ESC or close the pygame window"
-    )
-    play_until_user_exits(keys, key_sounds, keyboard)
+    while True:
+        # Information variables from parser
+        parser = get_parser()
+        wav_path, keyboard_path, clear_cache = process_args(parser, args)
+        # Pull audio data from wave file
+        audio_data, framerate_hz, channels = get_audio_data(wav_path)
+        # Pull keyboard info from path
+        results = get_keyboard_info(keyboard_path)
+        keys, tones, color_to_key, key_color, key_txt_color = results
+        key_sounds = get_or_create_key_sounds(
+            wav_path, framerate_hz, channels, tones, clear_cache, keys
+        )
+
+        _screen, keyboard = configure_pygame_audio_and_set_ui(
+            framerate_hz, channels, keyboard_path, color_to_key, key_color, key_txt_color
+        )
+        print(
+            "Ready for you to play!\n"
+            "Press the keys on your keyboard. "
+            "To exit presss ESC or close the pygame window"
+        )
+        play_until_user_exits(keys, key_sounds, keyboard)
+        # Record Sound
+        record_sound()
+
+
+
+
 
 
 def print_device_info():
