@@ -19,6 +19,9 @@ import librosa
 import numpy
 import soundfile
 
+import pyaudio
+import wave
+
 ANCHOR_INDICATOR = " anchor"
 ANCHOR_NOTE_REGEX = re.compile(r"\s[abcdefg]$")
 DESCRIPTION = 'Use your computer keyboard as a "piano"'
@@ -39,7 +42,7 @@ ALLOWED_EVENTS = {pygame.KEYDOWN, pygame.KEYUP, pygame.QUIT, pygame.MIDIIN}
 def get_parser() -> argparse.ArgumentParser:
     """Generate and return parser - unused in current implementation"""
     parser = argparse.ArgumentParser(description=DESCRIPTION)
-    default_wav_file = "audio_files/piano_c4.wav"
+    default_wav_file = "piano_c4.wav"
     parser.add_argument(
         "--wav",
         "-w",
@@ -427,8 +430,8 @@ def record_sound():
     samp_rate = 44100 # 44.1kHz sampling rate
     chunk = 4096 # 2^12 samples for buffer
     record_secs = 3 # seconds to record
-    dev_index = 2 # device index found by p.get_device_info_by_index(ii)
-    wav_output_filename = 'test1.wav' # name of .wav file
+    dev_index = 1 # device index found by p.get_device_info_by_index(ii)
+    wav_output_filename = 'piano_c4.wav' # name of .wav file
 
     audio = pyaudio.PyAudio() # create pyaudio instantiation
 
