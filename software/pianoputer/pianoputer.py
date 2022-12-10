@@ -43,8 +43,8 @@ ALLOWED_EVENTS = {pygame.KEYDOWN, pygame.KEYUP, pygame.QUIT, pygame.MIDIIN}
 
 # Setup GPIO
 btn_pin = 11
-g_pin = 9
-y_pin = 6
+g_pin = 3
+y_pin = 5
 r_pin = 8
 
 
