@@ -43,9 +43,9 @@ ALLOWED_EVENTS = {pygame.KEYDOWN, pygame.KEYUP, pygame.QUIT, pygame.MIDIIN}
 
 # Setup GPIO
 btn_pin = 11
-g_pin = 15
-y_pin = 16
-r_pin = 18
+g_pin = 9
+y_pin = 6
+r_pin = 8
 
 
 def get_parser() -> argparse.ArgumentParser:
