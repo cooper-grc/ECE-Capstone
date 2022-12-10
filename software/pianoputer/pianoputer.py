@@ -509,10 +509,10 @@ def play_pianoputer(args: Optional[List[str]] = None):
     Keyword arguments:
         args -- list of arguments 
     """
-    processing()
     # Setup GPIO
     setup_gpio()
-
+    processing()
+    
     while True:
         # Information variables from parser
         parser = get_parser()
