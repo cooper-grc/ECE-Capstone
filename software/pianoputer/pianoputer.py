@@ -43,6 +43,7 @@ ALLOWED_EVENTS = {pygame.KEYDOWN, pygame.KEYUP, pygame.QUIT, pygame.MIDIIN}
 
 # Setup GPIO
 btn_pin = 11
+channel = 11
 g_pin = 3
 y_pin = 5
 r_pin = 8
@@ -363,7 +364,10 @@ def play_until_user_exits(
     going = True
     key = None
     playable()
+    GPIO.add_event_detect(channel, GPIO.FALLING)
     while going:
+        if GPIO.event_detected(channel):
+            going = False
         events = event_get()
         for e in events:
             if e.type in [pygame.QUIT]:
@@ -477,7 +481,8 @@ def record_sound():
 
 def setup_gpio():
     GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(btn_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    # GPIO.setup(btn_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.setup(channel, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(g_pin, GPIO.OUT)
     GPIO.setup(y_pin, GPIO.OUT)
     GPIO.setup(r_pin, GPIO.OUT)
