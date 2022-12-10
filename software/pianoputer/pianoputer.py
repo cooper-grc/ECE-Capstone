@@ -363,6 +363,7 @@ def play_until_user_exits(
 
     going = True
     key = None
+    GPIO.add_event_detect(channel, GPIO.FALLING)
     playable()
     while going:
         if GPIO.event_detected(channel):
@@ -394,6 +395,7 @@ def play_until_user_exits(
                 event_post(m_e)
     
     processing()
+    GPIO.remove_event_detect(channel)
 
     del i
     pygame.midi.quit()
@@ -482,7 +484,6 @@ def setup_gpio():
     GPIO.setmode(GPIO.BOARD)
     # GPIO.setup(btn_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(channel, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.add_event_detect(channel, GPIO.FALLING)
     GPIO.setup(g_pin, GPIO.OUT)
     GPIO.setup(y_pin, GPIO.OUT)
     GPIO.setup(r_pin, GPIO.OUT)
