@@ -481,8 +481,8 @@ def record_sound():
 def setup_gpio():
     GPIO.setmode(GPIO.BOARD)
     # GPIO.setup(btn_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.add_event_detect(channel, GPIO.FALLING)
     GPIO.setup(channel, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.add_event_detect(channel, GPIO.FALLING)
     GPIO.setup(g_pin, GPIO.OUT)
     GPIO.setup(y_pin, GPIO.OUT)
     GPIO.setup(r_pin, GPIO.OUT)
