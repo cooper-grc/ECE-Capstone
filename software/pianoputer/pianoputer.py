@@ -525,7 +525,7 @@ def play_pianoputer(args: Optional[List[str]] = None):
     pygame.mixer.pre_init(44100, -16, 1, 512)
     pygame.init()
     midi_in = rtmidi.MidiIn()
-    midi_in.open_port(3)
+    midi_in.open_port(1)
     midi_in.set_callback(handle_midi_input)
 
     #lower and higher range of wav files
@@ -560,7 +560,8 @@ def play_pianoputer(args: Optional[List[str]] = None):
         )
 
         midi_in.set_callback(handle_midi_input, data=sounds)
-
+        while True:
+            continue
         #play_until_user_exits(keys, key_sounds, keyboard)
         # Record Sound
         #record_sound()
@@ -569,11 +570,15 @@ def play_pianoputer(args: Optional[List[str]] = None):
     # finally:
     #     GPIO.cleanup()
 
+
 def handle_midi_input(event, sounds=None):
     message, deltatime = event
     print(f'message: {message}, deltatime: {deltatime}')
-    index = message - 60 + 23
-    pygame.mixer.Sound.play(sounds[index])
+    index = message[1] - 60 + 23
+    if message[2] >0:
+        pygame.mixer.Sound.play(sounds[index])
+    else:
+        pygame.mixer.Sound.stop(sounds[index])
 
 
 
