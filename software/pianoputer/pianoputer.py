@@ -523,6 +523,11 @@ def ready_to_record():
     sleep(0.25)
     GPIO.output(r_pin, GPIO.HIGH)
 
+def error_indicator():
+    GPIO.output(g_pin, GPIO.HIGH)
+    GPIO.output(y_pin, GPIO.HIGH)
+    GPIO.output(r_pin, GPIO.HIGH)
+
 
 
 
@@ -562,8 +567,9 @@ def play_pianoputer(args: Optional[List[str]] = None):
             play_until_user_exits(keys, key_sounds, keyboard)
             # Record Sound
             record_sound()
-    except:
-        print("Error")
+    except Exception as e:
+        print(e)
+        error_indicator()
     finally:
         GPIO.cleanup()
 
