@@ -349,7 +349,7 @@ def play_until_user_exits(
     _print_device_info()
 
     # Midi device id
-    device_id = None
+    device_id = 3
 
     if device_id is None:
         input_id = pygame.midi.get_default_input_id()
