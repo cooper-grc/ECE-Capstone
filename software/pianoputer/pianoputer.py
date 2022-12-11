@@ -52,7 +52,7 @@ r_pin = 8
 def get_parser() -> argparse.ArgumentParser:
     """Generate and return parser - unused in current implementation"""
     parser = argparse.ArgumentParser(description=DESCRIPTION)
-    default_wav_file = "piano_c4.wav"
+    default_wav_file = "/home/okcpe/ece-capstone/software/pianoputer/piano_c4.wav"
     parser.add_argument(
         "--wav",
         "-w",
@@ -349,7 +349,7 @@ def play_until_user_exits(
     _print_device_info()
 
     # Midi device id
-    device_id = 3
+    device_id = None
 
     if device_id is None:
         input_id = pygame.midi.get_default_input_id()
@@ -578,3 +578,4 @@ def _print_device_info():
 
 if __name__ == "__main__":
     play_pianoputer()
+
