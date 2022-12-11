@@ -23,7 +23,7 @@ import pyaudio
 import wave
 
 import RPi.GPIO as GPIO
-import time
+from time import sleep
 
 ANCHOR_INDICATOR = " anchor"
 ANCHOR_NOTE_REGEX = re.compile(r"\s[abcdefg]$")
@@ -455,6 +455,9 @@ def record_sound():
     stream = audio.open(format = form_1,rate = samp_rate,channels = chans, \
                         input_device_index = dev_index,input = True, \
                         frames_per_buffer=chunk)
+
+    
+    ready_to_record()
     print("recording")
     recording()
     frames = []
@@ -506,6 +509,21 @@ def playable():
     GPIO.output(g_pin, GPIO.HIGH)
     GPIO.output(y_pin, GPIO.LOW)
     GPIO.output(r_pin, GPIO.LOW)
+
+def ready_to_record():
+    GPIO.output(g_pin, GPIO.LOW)
+    GPIO.output(y_pin, GPIO.LOW)
+    GPIO.output(r_pin, GPIO.HIGH)
+    sleep(0.25)
+    GPIO.output(r_pin, GPIO.LOW)
+    sleep(0.25)
+    GPIO.output(r_pin, GPIO.HIGH)
+    sleep(0.25)
+    GPIO.output(r_pin, GPIO.LOW)
+    sleep(0.25)
+    GPIO.output(r_pin, GPIO.HIGH)
+
+
 
 
 
