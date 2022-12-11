@@ -449,6 +449,7 @@ def record_sound():
     dev_index = 1 # device index found by p.get_device_info_by_index(ii)
     wav_output_filename = 'piano_c4.wav' # name of .wav file
 
+    ready_to_record()
     audio = pyaudio.PyAudio() # create pyaudio instantiation
 
     # create pyaudio stream
@@ -538,8 +539,8 @@ def ready_to_record():
     GPIO.output(r_pin, GPIO.HIGH)
     sleep(0.25)
     GPIO.output(r_pin, GPIO.LOW)
-    sleep(0.25)
-    GPIO.output(r_pin, GPIO.HIGH)
+    sleep(0.2)
+
 
 
 def error_indicator():
