@@ -456,7 +456,6 @@ def record_sound():
                         input_device_index = dev_index,input = True, \
                         frames_per_buffer=chunk)
 
-    
     ready_to_record()
     print("recording")
     recording()
@@ -483,9 +482,12 @@ def record_sound():
     wavefile.writeframes(b''.join(frames))
     wavefile.close()
 
+
 def setup_gpio():
+    """
+    Setup GPIO pins for LED outputs and button input
+    """
     GPIO.setmode(GPIO.BOARD)
-    # GPIO.setup(btn_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(channel, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.setup(g_pin, GPIO.OUT)
     GPIO.setup(y_pin, GPIO.OUT)
@@ -495,22 +497,39 @@ def setup_gpio():
     GPIO.output(y_pin, GPIO.LOW)
     GPIO.output(r_pin, GPIO.LOW)
 
+
 def recording():
+    """
+    Turn on red LED and turn off other LEDs to indicate program is in recording state
+    """
     GPIO.output(g_pin, GPIO.LOW)
     GPIO.output(y_pin, GPIO.LOW)
     GPIO.output(r_pin, GPIO.HIGH)
+
 
 def processing():
+    """
+    Turn on yellow LED and turn off other LEDs to indicate program is in processing state
+    """
     GPIO.output(g_pin, GPIO.LOW)
     GPIO.output(y_pin, GPIO.HIGH)
     GPIO.output(r_pin, GPIO.LOW)
+
 
 def playable():
+    """
+    Turn on green LED and turn off other LEDs to indicate program is in playable state
+    """
+    print("Playable")
     GPIO.output(g_pin, GPIO.HIGH)
     GPIO.output(y_pin, GPIO.LOW)
     GPIO.output(r_pin, GPIO.LOW)
 
+
 def ready_to_record():
+    """
+    Blink red LED to warn user the program is about to enter the recording state
+    """
     GPIO.output(g_pin, GPIO.LOW)
     GPIO.output(y_pin, GPIO.LOW)
     GPIO.output(r_pin, GPIO.HIGH)
@@ -523,13 +542,14 @@ def ready_to_record():
     sleep(0.25)
     GPIO.output(r_pin, GPIO.HIGH)
 
+
 def error_indicator():
+    """
+    Turn on all of the LEDs to indicate the program encountered an error
+    """
     GPIO.output(g_pin, GPIO.HIGH)
     GPIO.output(y_pin, GPIO.HIGH)
     GPIO.output(r_pin, GPIO.HIGH)
-
-
-
 
 
 def play_pianoputer(args: Optional[List[str]] = None):
@@ -542,11 +562,11 @@ def play_pianoputer(args: Optional[List[str]] = None):
         # Setup GPIO
         setup_gpio()
         processing()
+        # Information variables from parser
+        parser = get_parser()
+        wav_path, keyboard_path, clear_cache = process_args(parser, args)
 
         while True:
-            # Information variables from parser
-            parser = get_parser()
-            wav_path, keyboard_path, clear_cache = process_args(parser, args)
             # Pull audio data from wave file
             audio_data, framerate_hz, channels = get_audio_data(wav_path)
             # Pull keyboard info from path
@@ -559,11 +579,8 @@ def play_pianoputer(args: Optional[List[str]] = None):
             _screen, keyboard = configure_pygame_audio_and_set_ui(
                 framerate_hz, channels, keyboard_path, color_to_key, key_color, key_txt_color
             )
-            print(
-                "Ready for you to play!\n"
-                "Press the keys on your keyboard. "
-                "To exit presss ESC or close the pygame window"
-            )
+
+            # Run play function
             play_until_user_exits(keys, key_sounds, keyboard)
             # Record Sound
             record_sound()
@@ -572,7 +589,6 @@ def play_pianoputer(args: Optional[List[str]] = None):
         error_indicator()
     finally:
         GPIO.cleanup()
-
 
 
 def print_device_info():
