@@ -561,12 +561,11 @@ def play_pianoputer(args: Optional[List[str]] = None):
     # Setup GPIO
     setup_gpio()
     processing()
-
+    # Information variables from parser
+    parser = get_parser()
+    wav_path, keyboard_path, clear_cache = process_args(parser, args)
 
     while True:
-        # Information variables from parser
-        parser = get_parser()
-        wav_path, keyboard_path, clear_cache = process_args(parser, args)
         # Pull audio data from wave file
         audio_data, framerate_hz, channels = get_audio_data(wav_path)
         # Pull keyboard info from path
