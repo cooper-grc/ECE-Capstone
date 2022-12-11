@@ -539,7 +539,7 @@ def ready_to_record():
     GPIO.output(r_pin, GPIO.HIGH)
     sleep(0.25)
     GPIO.output(r_pin, GPIO.LOW)
-    sleep(0.2)
+    sleep(0.24)
 
 
 
