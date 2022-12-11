@@ -515,39 +515,39 @@ def play_pianoputer(args: Optional[List[str]] = None):
     Keyword arguments:
         args -- list of arguments 
     """
-    # try:
-    # Setup GPIO
-    setup_gpio()
-    processing()
+    try:
+        # Setup GPIO
+        setup_gpio()
+        processing()
 
-    while True:
-        # Information variables from parser
-        parser = get_parser()
-        wav_path, keyboard_path, clear_cache = process_args(parser, args)
-        # Pull audio data from wave file
-        audio_data, framerate_hz, channels = get_audio_data(wav_path)
-        # Pull keyboard info from path
-        results = get_keyboard_info(keyboard_path)
-        keys, tones, color_to_key, key_color, key_txt_color = results
-        key_sounds = get_or_create_key_sounds(
-            wav_path, framerate_hz, channels, tones, True, keys
-        )
+        while True:
+            # Information variables from parser
+            parser = get_parser()
+            wav_path, keyboard_path, clear_cache = process_args(parser, args)
+            # Pull audio data from wave file
+            audio_data, framerate_hz, channels = get_audio_data(wav_path)
+            # Pull keyboard info from path
+            results = get_keyboard_info(keyboard_path)
+            keys, tones, color_to_key, key_color, key_txt_color = results
+            key_sounds = get_or_create_key_sounds(
+                wav_path, framerate_hz, channels, tones, True, keys
+            )
 
-        _screen, keyboard = configure_pygame_audio_and_set_ui(
-            framerate_hz, channels, keyboard_path, color_to_key, key_color, key_txt_color
-        )
-        print(
-            "Ready for you to play!\n"
-            "Press the keys on your keyboard. "
-            "To exit presss ESC or close the pygame window"
-        )
-        play_until_user_exits(keys, key_sounds, keyboard)
-        # Record Sound
-        record_sound()
-    # except:
-    #     print("Error")
-    # finally:
-    #     GPIO.cleanup()
+            _screen, keyboard = configure_pygame_audio_and_set_ui(
+                framerate_hz, channels, keyboard_path, color_to_key, key_color, key_txt_color
+            )
+            print(
+                "Ready for you to play!\n"
+                "Press the keys on your keyboard. "
+                "To exit presss ESC or close the pygame window"
+            )
+            play_until_user_exits(keys, key_sounds, keyboard)
+            # Record Sound
+            record_sound()
+    except:
+        print("Error")
+    finally:
+        GPIO.cleanup()
 
 
 
