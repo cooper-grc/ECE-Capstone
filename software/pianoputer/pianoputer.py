@@ -456,7 +456,6 @@ def record_sound():
                         input_device_index = dev_index,input = True, \
                         frames_per_buffer=chunk)
 
-    ready_to_record()
     print("recording")
     recording()
     frames = []
