@@ -649,7 +649,8 @@ def handle_midi_input(event, sounds=None):
     print(f'message: {message}, deltatime: {deltatime}')
     index = message[1] - 69 + 23
     print("i " + str(index))
-    if message[2] >0:
+    print("message " + message)
+    if message[2] > 64:
         pygame.mixer.Sound.play(sounds[index])
     else:
         pygame.mixer.Sound.stop(sounds[index])
