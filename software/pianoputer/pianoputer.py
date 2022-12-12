@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+from scipy.io.wavfile import read
 import argparse
 import codecs
 import os
@@ -22,6 +22,7 @@ import soundfile
 
 import pyaudio
 import wave
+import webrtcvad
 
 import RPi.GPIO as GPIO
 import time
@@ -475,12 +476,33 @@ def record_sound():
     stream.close()
     audio.terminate()
 
+
+
     # save the audio frames as .wav file
     wavefile = wave.open(wav_output_filename,'wb')
     wavefile.setnchannels(chans)
     wavefile.setsampwidth(audio.get_sample_size(form_1))
     wavefile.setframerate(samp_rate)
     wavefile.writeframes(b''.join(frames))
+    wavefile.close()
+
+
+    start = 0
+    _, ints = read(wav_output_filename)
+    print(ints)
+
+    for i in ints:
+         start +=1
+         if abs(i) > 500:
+            start = start//4096
+            break
+    trimmed = frames[start:]
+    print(start)
+    wavefile = wave.open(wav_output_filename,'wb')
+    wavefile.setnchannels(chans)
+    wavefile.setsampwidth(audio.get_sample_size(form_1))
+    wavefile.setframerate(samp_rate)
+    wavefile.writeframes(b''.join(trimmed))
     wavefile.close()
 
 def setup_gpio():
@@ -531,12 +553,16 @@ def play_pianoputer(args: Optional[List[str]] = None):
     #lower and higher range of wav files
     high= 19
     low = -23
-    sounds =[]
-    for i in range(low,high):
-        newsound = pygame.mixer.Sound("/home/okcpe/ece-capstone/software/pianoputer/piano_c4/" + str(i)+".wav")
-        sounds.append(newsound)
 
     while True:
+        sounds =[]
+        for i in range(low,high):
+            try:
+                newsound = pygame.mixer.Sound("/home/okcpe/ece-capstone/software/pianoputer/piano_c4/" + str(i)+".wav")
+                sounds.append(newsound)
+            except FileNotFoundError:
+                pass
+
         # Information variables from parser
         parser = get_parser()
         wav_path, keyboard_path, clear_cache = process_args(parser, args)
@@ -560,15 +586,19 @@ def play_pianoputer(args: Optional[List[str]] = None):
         )
 
         midi_in.set_callback(handle_midi_input, data=sounds)
-        while True:
-            continue
-        #play_until_user_exits(keys, key_sounds, keyboard)
-        # Record Sound
-        #record_sound()
-    # except:
-    #     print("Error")
-    # finally:
-    #     GPIO.cleanup()
+
+        going = True
+        GPIO.add_event_detect(channel, GPIO.FALLING)
+        playable()
+        while going:
+            if GPIO.event_detected(channel):
+                GPIO.remove_event_detect(channel)
+                record_sound()
+                going=False
+
+        key_sounds = get_or_create_key_sounds(
+            wav_path, framerate_hz, channels, tones, True, keys
+        )
 
 
 def handle_midi_input(event, sounds=None):
