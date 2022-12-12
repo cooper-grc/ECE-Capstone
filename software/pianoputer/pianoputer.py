@@ -646,9 +646,9 @@ def play_pianoputer(args: Optional[List[str]] = None):
 def handle_midi_input(event, sounds=None):
     message, deltatime = event
     print("len " + str(len(sounds)))
-    print("i " + str(index))
     print(f'message: {message}, deltatime: {deltatime}')
     index = message[1] - 69 + 23
+    print("i " + str(index))
     if message[2] >0:
         pygame.mixer.Sound.play(sounds[index])
     else:
