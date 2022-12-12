@@ -495,7 +495,7 @@ def record_sound():
 
     for i in ints:
          start +=1
-         if abs(i) > 500:
+         if abs(i) > 300:
             start = start//4096
             break
     trimmed = frames[start:]
@@ -563,7 +563,7 @@ def ready_to_record():
     GPIO.output(r_pin, GPIO.HIGH)
     sleep(0.25)
     GPIO.output(r_pin, GPIO.LOW)
-    sleep(0.24)
+    sleep(0.22)
 
 
 
