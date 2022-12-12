@@ -451,7 +451,7 @@ def record_sound():
     chunk = 4096 # 2^12 samples for buffer
     record_secs = 3 # seconds to record
     dev_index = 1 # device index found by p.get_device_info_by_index(ii)
-    wav_output_filename = 'piano_c4.wav' # name of .wav file
+    wav_output_filename = '/home/okcpe/ece-capstone/software/pianoputer/piano_c4.wav' # name of .wav file
 
     ready_to_record()
     audio = pyaudio.PyAudio() # create pyaudio instantiation
