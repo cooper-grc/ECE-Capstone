@@ -655,7 +655,7 @@ def handle_midi_input(event, sounds=None):
     print("i " + str(index))
     if message[0] == 144 and message[2] > 2:
         pygame.mixer.Sound.play(sounds[index])
-    else:
+    elif message[0] == 128:
         pygame.mixer.Sound.stop(sounds[index])
 
 def print_device_info():
