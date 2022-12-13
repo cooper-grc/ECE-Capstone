@@ -43,7 +43,7 @@ KEYBOARD_ASSET_PREFIX = "keyboards/"
 CURRENT_WORKING_DIR = Path(__file__).parent.absolute()
 ALLOWED_EVENTS = {pygame.KEYDOWN, pygame.KEYUP, pygame.QUIT, pygame.MIDIIN}
 
-# Setup GPIO
+# GPIO defines
 btn_pin = 11
 channel = 11
 g_pin = 3
@@ -194,7 +194,6 @@ def get_keyboard_info(keyboard_file: str):
         key_color -- tuple of key color
         key_txt_color -- tuple of key text color
     """
-
     with codecs.open(keyboard_file, encoding="utf-8") as k_file:
         lines = k_file.readlines()
     keys = []
@@ -254,159 +253,6 @@ def get_keyboard_info(keyboard_file: str):
     return keys, tones, color_to_key, key_color, key_txt_color
 
 
-def configure_pygame_audio_and_set_ui(
-    framerate_hz: int,
-    channels: int,
-    keyboard_arg: str,
-    color_to_key: Dict[str, List[kl.Key]],
-    key_color: Tuple[int, int, int, int],
-    key_txt_color: Tuple[int, int, int, int],
-) -> Tuple[pygame.Surface, klp.KeyboardLayout]:
-    # ui
-    pygame.display.init()
-    pygame.display.set_caption("pianoputer")
-
-    # block events that we don't want, this must be after display.init
-    pygame.event.set_blocked(None)
-    pygame.event.set_allowed(list(ALLOWED_EVENTS))
-
-    # fonts
-    pygame.font.init()
-
-    # audio
-    pygame.mixer.init(
-        framerate_hz,
-        BITS_32BIT,
-        channels,
-        allowedchanges=AUDIO_ALLOWED_CHANGES_HARDWARE_DETERMINED,
-    )
-
-    screen_width = 50
-    screen_height = 50
-    if "qwerty" in keyboard_arg:
-        layout_name = kl.LayoutName.QWERTY
-    elif "azerty" in keyboard_arg:
-        layout_name = kl.LayoutName.AZERTY_LAPTOP
-    else:
-        ValueError("keyboard must have qwerty or azerty in its name")
-    margin = 4
-    key_size = 60
-    overrides = {}
-    for color_value, keys in color_to_key.items():
-        override_color = color = pygame.Color(color_value)
-        inverted_color = list(~override_color)
-        other_val = 255
-        if (
-            abs(color_value[0] - inverted_color[0]) > abs(color_value[0] - other_val)
-        ) or color_value == CYAN:
-            override_txt_color = pygame.Color(inverted_color)
-        else:
-            # biases grey override keys to use white as txt_color
-            override_txt_color = pygame.Color([other_val] * 3 + [255])
-        override_key_info = kl.KeyInfo(
-            margin=margin,
-            color=override_color,
-            txt_color=override_txt_color,
-            txt_font=pygame.font.SysFont("Arial", key_size // 4),
-            txt_padding=(key_size // 10, key_size // 10),
-        )
-        for key in keys:
-            overrides[key.value] = override_key_info
-
-    key_txt_color = pygame.Color(key_txt_color)
-    keyboard_info = kl.KeyboardInfo(position=(0, 0), padding=2, color=key_txt_color)
-    key_info = kl.KeyInfo(
-        margin=margin,
-        color=pygame.Color(key_color),
-        txt_color=pygame.Color(key_txt_color),
-        txt_font=pygame.font.SysFont("Arial", key_size // 4),
-        txt_padding=(key_size // 6, key_size // 10),
-    )
-    letter_key_size = (key_size, key_size)  # width, height
-    keyboard = klp.KeyboardLayout(
-        layout_name, keyboard_info, letter_key_size, key_info, overrides
-    )
-    screen_width = keyboard.rect.width
-    screen_height = keyboard.rect.height
-
-    screen ="" #pygame.display.set_mode((screen_width, screen_height))
-   # screen.fill(pygame.Color("black"))
-    #if keyboard:
-        #keyboard.draw(screen)
-    pygame.display.update()
-    return screen, keyboard
-
-'''
-def play_until_user_exits(
-    keys: List[kl.Key],
-    key_sounds: List[pygame.mixer.Sound],
-    keyboard: klp.KeyboardLayout,
-):
-    """Plays sounds from keypresses. Runs continuously until stopped by user"""
-    sound_by_key = dict(zip(keys, key_sounds))
-
-    event_get = pygame.event.get
-    event_post = pygame.event.post
-    pygame.midi.init()
-    _print_device_info()
-
-    # Midi device id
-    device_id = 3
-
-    if device_id is None:
-        input_id = pygame.midi.get_default_input_id()
-    else:
-        input_id = device_id
-
-    print("using input_id :%s:" % input_id)
-    i = pygame.midi.Input(input_id)
-
-    pygame.display.set_mode((1, 1))
-
-    going = True
-    key = None
-    GPIO.add_event_detect(channel, GPIO.FALLING)
-    playable()
-    while going:
-        if GPIO.event_detected(channel):
-            going = False
-        events = event_get()
-        for e in events:
-            if e.type in [pygame.QUIT]:
-                going = False
-            if e.type in [pygame.KEYDOWN]:
-                going = False
-            if e.type in [pygame.midi.MIDIIN]:
-               # if e is a valid midi keypress play the corresponding sound
-               if e.__dict__.get('data1') != 0 and e.__dict__.get('data2') != 0:
-                    try:
-                        key = keys[int(e.__dict__.get('data1')) % len(keys)]
-                        sound = sound_by_key[key]
-                        sound.stop()
-                        sound.play(fade_ms=SOUND_FADE_MILLISECONDS)
-                    except KeyError:
-                        continue
-
-
-        if i.poll():
-            midi_events = i.read(10)
-            # convert them into pygame events.
-            midi_evs = pygame.midi.midis2events(midi_events, i.device_id)
-
-            for m_e in midi_evs:
-                event_post(m_e)
-
-    processing()
-    GPIO.remove_event_detect(channel)
-
-    del i
-    pygame.midi.quit()
-
-    pygame.quit()
-'''
-
-
-
 def get_audio_data(wav_path: str) -> Tuple:
     """Get the data from the wave file.
 
@@ -444,7 +290,11 @@ def process_args(parser: argparse.ArgumentParser, args: Optional[List]) -> Tuple
         keyboard_path = os.path.join(CURRENT_WORKING_DIR, keyboard_path)
     return wav_path, keyboard_path, args.clear_cache
 
+
 def record_sound():
+    """
+    Records from mic for 3 seconds and trims dead-space at start of clip then saves to wav file
+    """
     form_1 = pyaudio.paInt16 # 16-bit resolution
     chans = 1 # 1 channel
     samp_rate = 44100 # 44.1kHz sampling rate
@@ -488,7 +338,7 @@ def record_sound():
     wavefile.writeframes(b''.join(frames))
     wavefile.close()
 
-
+    # Trim the audio
     start = 0
     _, ints = read(wav_output_filename)
     print(ints)
@@ -506,6 +356,7 @@ def record_sound():
     wavefile.setframerate(samp_rate)
     wavefile.writeframes(b''.join(trimmed))
     wavefile.close()
+
 
 def setup_gpio():
     """
@@ -570,7 +421,6 @@ def ready_to_record():
     sleep(0.22)
 
 
-
 def error_indicator():
     """
     Turn on all of the LEDs to indicate the program encountered an error
@@ -586,10 +436,11 @@ def play_pianoputer(args: Optional[List[str]] = None):
     Keyword arguments:
         args -- list of arguments 
     """
-    # try:
     # Setup GPIO
     setup_gpio()
     processing()
+
+    # Initialize pygame and midi
     pygame.mixer.pre_init(44100, -16, 1, 512)
     pygame.init()
     midi_in = rtmidi.MidiIn()
@@ -600,6 +451,10 @@ def play_pianoputer(args: Optional[List[str]] = None):
     high= 19
     low = -23
 
+    # Information variables from parser
+    parser = get_parser()
+    wav_path, keyboard_path, clear_cache = process_args(parser, args)
+
     while True:
         sounds =[]
         for i in range(low,high):
@@ -609,27 +464,15 @@ def play_pianoputer(args: Optional[List[str]] = None):
             except FileNotFoundError:
                 pass
 
-        # Information variables from parser
-        parser = get_parser()
-        wav_path, keyboard_path, clear_cache = process_args(parser, args)
         # Pull audio data from wave file
         audio_data, framerate_hz, channels = get_audio_data(wav_path)
         # Pull keyboard info from path
         results = get_keyboard_info(keyboard_path)
         keys, tones, color_to_key, key_color, key_txt_color = results
-        #key_sounds = get_or_create_key_sounds(
-        #    wav_path, framerate_hz, channels, tones, True, keys
-        #)
-
-
-       # _screen, keyboard = configure_pygame_audio_and_set_ui(
-       #     framerate_hz, channels, keyboard_path, color_to_key, key_color, key_txt_color
-       # )
-        print(
-            "Ready for you to play!\n"
-            "Press the keys on your keyboard. "
-            "To exit presss ESC or close the pygame window"
+        key_sounds = get_or_create_key_sounds(
+           wav_path, framerate_hz, channels, tones, clear_cache, keys
         )
+        clear_cache = True
 
         midi_in.set_callback(handle_midi_input, data=sounds)
 
@@ -637,17 +480,20 @@ def play_pianoputer(args: Optional[List[str]] = None):
         GPIO.add_event_detect(channel, GPIO.FALLING)
         playable()
         while going:
+            # When the record button is pressed leave playing loop
             if GPIO.event_detected(channel):
                 GPIO.remove_event_detect(channel)
                 record_sound()
                 going=False
 
-        key_sounds = get_or_create_key_sounds(
-            wav_path, framerate_hz, channels, tones, True, keys
-        )
-
 
 def handle_midi_input(event, sounds=None):
+    """
+    Handle MIDI input: play or stop sound based on MIDI message
+    Parameters:
+        event -- MIDI input event
+        sounds -- List of sounds that can be played
+    """
     message, deltatime = event
     print("len " + str(len(sounds)))
     print(f'message: {message}, deltatime: {deltatime}')
@@ -657,6 +503,7 @@ def handle_midi_input(event, sounds=None):
         pygame.mixer.Sound.play(sounds[index])
     elif message[0] == 128:
         pygame.mixer.Sound.stop(sounds[index])
+
 
 def print_device_info():
     """Helper function to print info on connected midi devices"""
@@ -685,4 +532,3 @@ def _print_device_info():
 
 if __name__ == "__main__":
     play_pianoputer()
-
