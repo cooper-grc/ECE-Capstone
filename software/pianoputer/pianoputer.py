@@ -391,7 +391,7 @@ def processing():
     GPIO.output(r_pin, GPIO.LOW)
 
 
-def playable():
+def ready():
     """
     Turn on green LED and turn off other LEDs to indicate program is in playable state
     """
@@ -478,7 +478,7 @@ def play_pianoputer(args: Optional[List[str]] = None):
 
         going = True
         GPIO.add_event_detect(channel, GPIO.FALLING)
-        playable()
+        ready()
         while going:
             # When the record button is pressed leave playing loop
             if GPIO.event_detected(channel):
